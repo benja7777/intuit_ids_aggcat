@@ -342,6 +342,8 @@ module IntuitIdsAggcat
     include XML::Mapping
     text_node :source, "source", :default_value => nil
     text_node :category_name, "categoryName", :default_value => nil
+    text_node :context_type, "contextType", :default_value => nil
+    text_node :schedule_c, "scheduleC", :default_value => nil
   end
 
   class Categorization
