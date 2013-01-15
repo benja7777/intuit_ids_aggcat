@@ -183,7 +183,10 @@ module IntuitIdsAggcat
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
           response = access_token.post(url, body, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com' }.merge(headers))
           response_xml = REXML::Document.new response.body
-          
+          Rails.logger.debug ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          Rails.logger.debug response.to_yaml
+          Rails.logger.debug ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          Rails.logger.debug response_xml.to_yaml
           # handle challenge responses from discoverAndAcccounts flow
           challenge_session_id = challenge_node_id = nil
           if !response["challengeSessionId"].nil?
@@ -207,6 +210,10 @@ module IntuitIdsAggcat
           begin
             response = access_token.get(url, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com' })
             response_xml = REXML::Document.new response.body
+            Rails.logger.debug ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+            Rails.logger.debug response.to_yaml
+            Rails.logger.debug ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+            Rails.logger.debug response_xml.to_yaml
           rescue REXML::ParseException => msg
               #Rails.logger.error "REXML Parse Exception"
               return nil
