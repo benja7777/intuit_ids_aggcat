@@ -95,6 +95,8 @@ module IntuitIdsAggcat
           il = InstitutionLogin.new
           il.credentials = creds
           daa = oauth_post_request url, il.save_to_xml.to_s, oauth_token_info
+          Rails.logger.debug "//////////////////////////////////////////////////////////"
+          Rails.logger.debug daa
           discover_account_data_to_hash daa
         end
 
