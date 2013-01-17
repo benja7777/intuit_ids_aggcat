@@ -6,13 +6,13 @@ require 'intuit_ids_aggcat/client/intuit_xml_mappings'
 module IntuitIdsAggcat
 
   module Client
-    
+
     class Services
 
       class << self
 
         def initialize
-          
+
         end
 
         ##
@@ -170,12 +170,23 @@ module IntuitIdsAggcat
         end
 
         ##
+        # This call is used to update the account type of an added account or explicitly refresh transactions
+        def update_institution_login_refresh oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens("default"), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, institution_login_id
+          response = oauth_get_request "https:// financialdatafeed.platform.intuit.com/v1/logins/#{institution_login_id}?refresh=true", oauth_token_info, consumer_key, consumer_secret
+          if response[:response_code] == "200"
+            true
+          else
+            return nil
+          end
+        end
+
+        ##
         # Helper method to issue post requests
         def oauth_post_request url, body, oauth_token_info, headers = {}, consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 120
           oauth_token = oauth_token_info[:oauth_token]
           oauth_token_secret = oauth_token_info[:oauth_token_secret]
 
-          options = { :request_token_path => 'https://financialdatafeed.platform.intuit.com', :timeout => timeout } 
+          options = { :request_token_path => 'https://financialdatafeed.platform.intuit.com', :timeout => timeout }
           options = options.merge({ :proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil?
           consumer = OAuth::Consumer.new(consumer_key, consumer_secret, options)
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
@@ -201,7 +212,7 @@ module IntuitIdsAggcat
           oauth_token = oauth_token_info[:oauth_token]
           oauth_token_secret = oauth_token_info[:oauth_token_secret]
 
-          options = { :request_token_path => 'https://financialdatafeed.platform.intuit.com', :timeout => timeout } 
+          options = { :request_token_path => 'https://financialdatafeed.platform.intuit.com', :timeout => timeout }
           options = options.merge({ :proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil?
           consumer = OAuth::Consumer.new(consumer_key, consumer_secret, options)
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
@@ -226,14 +237,14 @@ module IntuitIdsAggcat
           oauth_token_secret = oauth_token_info[:oauth_token_secret]
 
           options = { :request_token_path => 'https://financialdatafeed.platform.intuit.com', :timeout => timeout }
-          options = options.merge({ :proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil? 
+          options = options.merge({ :proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil?
           consumer = OAuth::Consumer.new(consumer_key, consumer_secret, options)
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
           response = access_token.delete(url, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com' })
           response_xml = REXML::Document.new response.body
           { :response_code => response.code, :response_xml => response_xml }
         end
-    
+
       end
     end
   end
