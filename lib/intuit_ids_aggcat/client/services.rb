@@ -208,8 +208,8 @@ module IntuitIdsAggcat
           begin
             response = access_token.get(url, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com' })
             response_xml = REXML::Document.new response.body
-            puts "body>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-            puts body
+            puts "url>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+            puts url
             puts "response>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
             puts response
           rescue REXML::ParseException => msg
