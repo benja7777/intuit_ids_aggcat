@@ -175,7 +175,8 @@ module IntuitIdsAggcat
           url = "https://financialdatafeed.platform.intuit.com/v1/logins/#{institution_login_id}?refresh=true"
           puts url
           puts oauth_token_info
-          response = oauth_put_request url, oauth_token_info
+          data = []
+          response = oauth_put_request url, data, oauth_token_info
           puts response
           if response[:response_code] == "200"
             true
@@ -236,7 +237,7 @@ module IntuitIdsAggcat
 
         ##
         # Helper method to issue put requests
-        def oauth_put_request url, oauth_token_info, consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 120
+        def oauth_put_request url, body, oauth_token_info, headers = {}, consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 120
           oauth_token = oauth_token_info[:oauth_token]
           oauth_token_secret = oauth_token_info[:oauth_token_secret]
 
@@ -244,19 +245,15 @@ module IntuitIdsAggcat
           options = options.merge({ :proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil?
           consumer = OAuth::Consumer.new(consumer_key, consumer_secret, options)
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
-          begin
-            response = access_token.put(url, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com' })
-            response_xml = REXML::Document.new response.body
-            puts "url>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-            puts url
-            puts "response>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-            puts response
-          rescue REXML::ParseException => msg
-              #Rails.logger.error "REXML Parse Exception"
-              return nil
-          end
+          response = access_token.put(url, body, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com' }.merge(headers))
+          response_xml = REXML::Document.new response.body
+          puts "body>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          puts body
+          puts "response>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          puts response
           { :response_code => response.code, :response_xml => response_xml }
         end
+
 
         ##
         # Helper method to issue delete requests
