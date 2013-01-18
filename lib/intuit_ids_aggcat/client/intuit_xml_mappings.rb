@@ -365,12 +365,9 @@ module IntuitIdsAggcat
     text_node :confirmation_number, "confirmationNumber", :default_value => nil
     text_node :payee_id, "payeeId", :default_value => nil
     text_node :payee_name, "payeeName", :default_value => nil
-    text_node :normalized_payee_name, "normalizedPayeeName", :default_value => nil
     text_node :memo, "memo", :default_value => nil
-    text_node :category, "category", :default_value => nil
     text_node :type, "type", :default_value => nil
     text_node :value_type, "valueType", :default_value => nil
-    text_node :category_name, "categoryName", :default_value => nil
     text_node :ofx_category_name, "ofxCategoryName", :default_value => nil
     numeric_node :currency_rate, "currencyRate", :default_value => nil
     boolean_node :original_currency, "originalCurrency", "true", "false", :default_value => nil
