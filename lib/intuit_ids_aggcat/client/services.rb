@@ -175,8 +175,8 @@ module IntuitIdsAggcat
           url = "https://financialdatafeed.platform.intuit.com/v1/logins/#{institution_login_id}?refresh=true"
           puts url
           puts oauth_token_info
-          data = nil
-          response = oauth_put_request url, data, oauth_token_info
+          data = ""
+          response = oauth_put_request url, data.save_to_xml.to_s, oauth_token_info
           puts response
           if response[:response_code] == "200"
             true
