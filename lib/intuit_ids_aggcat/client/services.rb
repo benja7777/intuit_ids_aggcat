@@ -238,14 +238,15 @@ module IntuitIdsAggcat
         ##
         # Helper method to issue put requests
         def oauth_put_request url, body, oauth_token_info, headers = {}, consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 120
-          oauth_token = oauth_token_info[:oauth_token]
-          oauth_token_secret = oauth_token_info[:oauth_token_secret]
+            oauth_token = oauth_token_info[:oauth_token]
+            oauth_token_secret = oauth_token_info[:oauth_token_secret]
 
-          options = { :request_token_path => 'https://financialdatafeed.platform.intuit.com', :timeout => timeout }
-          options = options.merge({ :proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil?
-          consumer = OAuth::Consumer.new(consumer_key, consumer_secret, options)
-          access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
-          response = access_token.put(url, body, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com' }.merge(headers))
+            options = { :request_token_path => 'https://financialdatafeed.platform.intuit.com', :timeout => timeout }
+            options = options.merge({ :proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil?
+            consumer = OAuth::Consumer.new(consumer_key, consumer_secret, options)
+            access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
+            response = access_token.put(url, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com' }.merge(headers))
+
           #response = access_token.post(url, body, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com', 'X-HTTP-Method-Override' => 'PUT' }.merge(headers))
           puts "body>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           puts body
