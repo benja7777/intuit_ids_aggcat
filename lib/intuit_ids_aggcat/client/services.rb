@@ -172,7 +172,7 @@ module IntuitIdsAggcat
         ##
         # This call is used to update the account type of an added account or explicitly refresh transactions
         def update_institution_login_refresh institution_login_id, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens("default"), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
-          response = oauth_get_request "https:// financialdatafeed.platform.intuit.com/v1/logins/#{institution_login_id}?refresh=true", oauth_token_info, consumer_key, consumer_secret
+          response = oauth_get_request "https://financialdatafeed.platform.intuit.com/v1/logins/#{institution_login_id}?refresh=true", oauth_token_info, consumer_key, consumer_secret
           if response[:response_code] == "200"
             true
           else
