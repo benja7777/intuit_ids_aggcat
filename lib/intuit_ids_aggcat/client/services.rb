@@ -247,11 +247,11 @@ module IntuitIdsAggcat
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
           #response = access_token.put(url, body, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com' }.merge(headers))
           response = access_token.post(url, body, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com', 'X-HTTP-Method-Override' => 'PUT' }.merge(headers))
-          response_xml = REXML::Document.new response.body
           puts "body>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           puts body
           puts "response>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           puts response
+          response_xml = REXML::Document.new response.body
           { :response_code => response.code, :response_xml => response_xml }
         end
 
