@@ -176,7 +176,8 @@ module IntuitIdsAggcat
           puts url
           puts oauth_token_info
           data = {:login_id => institution_login_id}
-          response = oauth_post_request url, data, oauth_token_info
+          #response = oauth_post_request url, data, oauth_token_info
+          response = oauth_get_request url, oauth_token_info, consumer_key, consumer_secret
           puts response
           if response[:response_code] == "200"
             true
