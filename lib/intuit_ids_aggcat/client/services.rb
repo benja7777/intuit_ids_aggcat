@@ -175,7 +175,7 @@ module IntuitIdsAggcat
           url = "https://financialdatafeed.platform.intuit.com/v1/logins/#{institution_login_id}?refresh=true"
           puts url
           puts oauth_token_info
-          data = ""
+          data = {:login_id => institution_login_id}
           response = oauth_put_request url, data, oauth_token_info
           puts response
           if response[:response_code] == "200"
@@ -245,7 +245,8 @@ module IntuitIdsAggcat
           options = options.merge({ :proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil?
           consumer = OAuth::Consumer.new(consumer_key, consumer_secret, options)
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
-          response = access_token.put(url, body, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com' }.merge(headers))
+          #response = access_token.put(url, body, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com' }.merge(headers))
+          response = access_token.post(url, body, { "Content-Type"=>'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com', 'X-HTTP-Method-Override' => 'PUT' }.merge(headers))
           response_xml = REXML::Document.new response.body
           puts "body>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           puts body
