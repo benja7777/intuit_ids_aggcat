@@ -241,7 +241,7 @@ module IntuitIdsAggcat
             oauth_token = oauth_token_info[:oauth_token]
             oauth_token_secret = oauth_token_info[:oauth_token_secret]
 
-            options = { :request_token_path => 'https://financialdatafeed.platform.intuit.com', :timeout => timeout }
+            options = { :request_token_path => 'https://financialdatafeed.platform.intuit.com', :timeout => timeout, :http_method => :put }
             options = options.merge({ :proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil?
             consumer = OAuth::Consumer.new(consumer_key, consumer_secret, options)
             access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
