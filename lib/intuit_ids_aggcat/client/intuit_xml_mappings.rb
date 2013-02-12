@@ -106,6 +106,56 @@ module IntuitIdsAggcat
     text_node :description, "description", :default_value => nil
   end
 
+  class BankingAccountType
+    include XML::Mapping
+    # added namespaces to make root element compliant with Intuit's expectation
+    def post_save xml, options={:mapping=>:_default}
+      xml.root.add_attributes("xmlns"=>"http://schema.intuit.com/platform/fdatafeed/bankingaccount/v1")
+    end
+    self.root_element_name "BankingAccount"
+    object_node :account_type, "bankingAccountType", :default_value => nil
+  end
+
+  class CreditAccountType
+    include XML::Mapping
+    # added namespaces to make root element compliant with Intuit's expectation
+    def post_save xml, options={:mapping=>:_default}
+      xml.root.add_attributes("xmlns"=>"http://schema.intuit.com/platform/fdatafeed/creditaccount/v1")
+    end
+    self.root_element_name "CreditAccount"
+    object_node :account_type, "creditAccountType", :default_value => nil
+  end
+
+  class LoanType
+    include XML::Mapping
+    # added namespaces to make root element compliant with Intuit's expectation
+    def post_save xml, options={:mapping=>:_default}
+      xml.root.add_attributes("xmlns"=>"http://schema.intuit.com/platform/fdatafeed/loan/v1")
+    end
+    self.root_element_name "Loan"
+    object_node :account_type, "loan", :default_value => nil
+  end
+
+  class InvestmentAccountType
+    include XML::Mapping
+    # added namespaces to make root element compliant with Intuit's expectation
+    def post_save xml, options={:mapping=>:_default}
+      xml.root.add_attributes("xmlns"=>"http://schema.intuit.com/platform/fdatafeed/investmentaccount/v1")
+    end
+    self.root_element_name "InvestmentAccount"
+    object_node :account_type, "investmentAccountType", :default_value => nil
+  end
+
+  class RewardsAccountType
+    include XML::Mapping
+    # added namespaces to make root element compliant with Intuit's expectation
+    def post_save xml, options={:mapping=>:_default}
+      xml.root.add_attributes("xmlns"=>"http://schema.intuit.com/platform/fdatafeed/rewardsaccount/v1")
+    end
+    self.root_element_name "RewardsAccount"
+    object_node :account_type, "rewardsAccountType", :default_value => nil
+  end
+
   class InstitutionLogin
     include XML::Mapping
     # added namespaces to make root element compliant with Intuit's expectation
