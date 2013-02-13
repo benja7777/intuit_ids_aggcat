@@ -33,8 +33,12 @@ module IntuitIdsAggcat
         # consumer_key and consumer_secret will be retrieved from the Configuration class if not provided
         def get_institution_detail id, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens("default"), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
           response = oauth_get_request "https://financialdatafeed.platform.intuit.com/rest-war/v1/institutions/#{id}", oauth_token_info, consumer_key, consumer_secret
-          institutions = InstitutionDetail.load_from_xml(response[:response_xml].root)
-          institutions
+          if response[:response_code] == "200"
+            institutions = InstitutionDetail.load_from_xml(response[:response_xml].root)
+            institutions
+          else
+            response
+          end
         end
 
         ##
@@ -133,13 +137,10 @@ module IntuitIdsAggcat
           end
           response = oauth_get_request url, oauth_token_info
           xml = REXML::Document.new response[:response_xml].to_s
-          tl = IntuitIdsAggcat::TransactionList.load_from_xml xml.root
-          total_txs = tl.banking_transactions.count + tl.credit_card_transactions.count + tl.investment_banking_transactions.count + tl.loan_transactions.count + tl.investment_transactions.count + tl.rewards_transactions.count
-          # Return challenge response required error if we get it *and* there are not txs. Really??!
-          if total_txs == 0 && response.response_xml.to_s.include?("CHALLENGE_RESPONSE_REQUIRED")
-            "CHALLENGE_RESPONSE_REQUIRED"
+          if response[:response_code] == "200"
+            tl = IntuitIdsAggcat::TransactionList.load_from_xml xml.root
           else
-            tl
+            response
           end
         end
 
@@ -307,7 +308,12 @@ module IntuitIdsAggcat
             challenge_session_id = response["challengeSessionId"]
             challenge_node_id = response["challengeNodeId"]
           end
-          {:challenge_session_id => challenge_session_id, :challenge_node_id => challenge_node_id, :response_code => response.code, :response_xml => response_xml}
+          if !response_xml.elements["Status/errorInfo"].nil?
+            error_code = response_xml.elements["Status/errorInfo/errorCode"].text
+            error_type = response_xml.elements["Status/errorInfo/errorType"].text
+            error_message = response_xml.elements["Status/errorInfo/errorMessage"].text
+          end
+          {:challenge_session_id => challenge_session_id, :challenge_node_id => challenge_node_id, :response_code => response.code, :response_xml => response_xml, :error_code => error_code, :error_type => error_type, :error_message => error_message}
         end
 
         ##
@@ -344,7 +350,12 @@ module IntuitIdsAggcat
             #Rails.logger.error "REXML Parse Exception"
             return nil
           end
-          {:response_code => response.code, :response_xml => response_xml}
+          if !response_xml.elements["Status/errorInfo"].nil?
+            error_code = response_xml.elements["Status/errorInfo/errorCode"].text
+            error_type = response_xml.elements["Status/errorInfo/errorType"].text
+            error_message = response_xml.elements["Status/errorInfo/errorMessage"].text
+          end
+          {:response_code => response.code, :response_xml => response_xml, :error_code => error_code, :error_type => error_type, :error_message => error_message}
         end
 
         ##
@@ -379,14 +390,17 @@ module IntuitIdsAggcat
             return nil
           end
           # handle challenge responses from discoverAndAcccounts flow
+          if !response_xml.elements["Status/errorInfo"].nil?
+            error_code = response_xml.elements["Status/errorInfo/errorCode"].text
+            error_type = response_xml.elements["Status/errorInfo/errorType"].text
+            error_message = response_xml.elements["Status/errorInfo/errorMessage"].text
+          end
           challenge_session_id = challenge_node_id = nil
           if !response["challengeSessionId"].nil?
             challenge_session_id = response["challengeSessionId"]
             challenge_node_id = response["challengeNodeId"]
-            {:challenge_session_id => challenge_session_id, :challenge_node_id => challenge_node_id, :response_code => response.code, :response_xml => response_xml}
-          else
-            {:response_code => response.code, :response_xml => response_xml}
           end
+          {:challenge_session_id => challenge_session_id, :challenge_node_id => challenge_node_id, :response_code => response.code, :response_xml => response_xml, :error_code => error_code, :error_type => error_type, :error_message => error_message}
         end
 
 
@@ -402,7 +416,12 @@ module IntuitIdsAggcat
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
           response = access_token.delete(url, {"Content-Type" => 'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com'})
           response_xml = REXML::Document.new response.body
-          {:response_code => response.code, :response_xml => response_xml}
+          if !response_xml.elements["Status/errorInfo"].nil?
+            error_code = response_xml.elements["Status/errorInfo/errorCode"].text
+            error_type = response_xml.elements["Status/errorInfo/errorType"].text
+            error_message = response_xml.elements["Status/errorInfo/errorMessage"].text
+          end
+          {:response_code => response.code, :response_xml => response_xml, :error_code => error_code, :error_type => error_type, :error_message => error_message}
         end
 
       end
