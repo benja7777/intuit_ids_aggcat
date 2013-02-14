@@ -39,9 +39,9 @@ module IntuitIdsAggcat
   class Account; end
   class BankingAccount < Account; end
   class CreditAccount < Account; end
-  class InvestmentAccount < Account; end     
-  class LoanAccount < Account; end    
-  class OtherAccount < Account; end  
+  class InvestmentAccount < Account; end
+  class LoanAccount < Account; end
+  class OtherAccount < Account; end
   class Choice; end
   class Transaction; end
   class BankingTransaction < Transaction; end
@@ -165,12 +165,12 @@ module IntuitIdsAggcat
       xml.root.add_namespace "xsi", "http://www.w3.org/2001/XMLSchema-instance"
       xml.root.add_namespace "xsd", "http://www.w3.org/2001/XMLSchema"
       # for challengeResponses/response
-      xml.each_element("//response") do |x| 
+      xml.each_element("//response") do |x|
         x.add_namespace "v11", "http://schema.intuit.com/platform/fdatafeed/challenge/v1"
         x.name = "v11:response"
       end
       # for challengeResponses root
-      xml.each_element("//challengeResponses") do |x| 
+      xml.each_element("//challengeResponses") do |x|
         x.add_namespace "v1", "http://schema.intuit.com/platform/fdatafeed/institutionlogin/v1"
         x.name = "challengeResponses"
       end
@@ -195,6 +195,19 @@ module IntuitIdsAggcat
   class Challenges
     include XML::Mapping
     array_node :challenge, "challenge", :class => Challenge, :default_value => nil
+    attr_accessor  :challenge_type,
+                   :response_code,
+                   :error_code,
+                   :error_type,
+                   :error_message,
+                   :challenge_node_id,
+                   :challenge_session_id
+    def error?
+      false
+    end
+    def mfa?
+      true
+    end
   end
 
   class Choice
@@ -230,6 +243,12 @@ module IntuitIdsAggcat
     array_node :investment_accounts, "InvestmentAccount", :class => InvestmentAccount, :default_value => nil
     #array_node :rewards_accounts, "RewardsAccount", :default_value => nil
     array_node :other_accounts, "OtherAccount", :class => OtherAccount, :default_value => nil
+    def error?
+      false
+    end
+    def mfa?
+      false
+    end
   end
 
   class Account
@@ -252,6 +271,9 @@ module IntuitIdsAggcat
     text_node :currency_code, "currencyCode", :default_value => nil
     text_node :bank_id, "bankId", :default_value => nil
     numeric_node :institution_login_id, "institutionLoginId", :default_value => nil
+    def error?
+      false
+    end
   end
 
   class BankingAccount < Account
@@ -274,14 +296,14 @@ module IntuitIdsAggcat
     include XML::Mapping
     use_mapping :_default
   end
-  
+
   class InvestmentAccount < Account
     include XML::Mapping
-    
-    text_node :investment_account_type, "investmentAccountType", :default_value => nil    
-    numeric_node :interest_margin_balance, "interestMarginBalance", :default_value => nil    
-    numeric_node :short_balance, "shortBalance", :default_value => nil    
-    numeric_node :available_cash_balance, "availableCashBalance", :default_value => nil    
+
+    text_node :investment_account_type, "investmentAccountType", :default_value => nil
+    numeric_node :interest_margin_balance, "interestMarginBalance", :default_value => nil
+    numeric_node :short_balance, "shortBalance", :default_value => nil
+    numeric_node :available_cash_balance, "availableCashBalance", :default_value => nil
     numeric_node :current_balance, "currentBalance", :default_value => nil
     numeric_node :maturity_value_amount, "maturityValueAmount", :default_value => nil
     numeric_node :unvested_balance, "unvestedBalance", :default_value => nil
@@ -289,75 +311,75 @@ module IntuitIdsAggcat
     numeric_node :emp_match_defer_amount_ytd, "empMatchDeferAmountYtd", :default_value => nil
     numeric_node :emp_match_amount, "empMatchAmount", :default_value => nil
     numeric_node :emp_match_amount_ytd, "empMatchAmountYtd", :default_value => nil
-    numeric_node :emp_pre_tax_contrib_amount, "empPretaxContribAmount", :default_value => nil    
-    numeric_node :emp_pre_tax_contrib_amount_ytd, "empPretaxContribAmountYtd", :default_value => nil 
-    numeric_node :rollover_itd, "rollover_itd", :default_value => nil 
-    numeric_node :cash_balance_amount, "cashBalanceAmount", :default_value => nil 
-    numeric_node :initial_loan_balance, "initialLoanBalance", :default_value => nil 
-    date_time_node :loan_start_date, "loanStartDate", :default_value => nil 
-    numeric_node :current_loan_balance, "currentLoanBalance", :default_value => nil 
-    numeric_node :loan_rate, "loanRate", :default_value => nil     
-    
-  end  
-  
+    numeric_node :emp_pre_tax_contrib_amount, "empPretaxContribAmount", :default_value => nil
+    numeric_node :emp_pre_tax_contrib_amount_ytd, "empPretaxContribAmountYtd", :default_value => nil
+    numeric_node :rollover_itd, "rollover_itd", :default_value => nil
+    numeric_node :cash_balance_amount, "cashBalanceAmount", :default_value => nil
+    numeric_node :initial_loan_balance, "initialLoanBalance", :default_value => nil
+    date_time_node :loan_start_date, "loanStartDate", :default_value => nil
+    numeric_node :current_loan_balance, "currentLoanBalance", :default_value => nil
+    numeric_node :loan_rate, "loanRate", :default_value => nil
+
+  end
+
   class LoanAccount < Account
     include XML::Mapping
     text_node :loan_type, "loanType", :default_value => nil
     date_time_node :posted_date, "postedDate", :default_value => nil
-    text_node :term, "term", :default_value => nil    
-    text_node :holder_name, "holderName", :default_value => nil    
-    numeric_node :late_fee_amount, "lateFeeAmount", :default_value => nil    
+    text_node :term, "term", :default_value => nil
+    text_node :holder_name, "holderName", :default_value => nil
+    numeric_node :late_fee_amount, "lateFeeAmount", :default_value => nil
     numeric_node :payoff_amount, "payoffAmount", :default_value => nil
     date_time_node :payoff_amount_date, "payoffAmountDate", :default_value => nil
-    text_node :reference_number, "referenceNumber", :default_value => nil    
+    text_node :reference_number, "referenceNumber", :default_value => nil
     date_time_node :original_maturity_date, "originalMaturityDate", :default_value => nil
-    text_node :tax_payee_name, "taxPayeeName", :default_value => nil  
+    text_node :tax_payee_name, "taxPayeeName", :default_value => nil
     numeric_node :principal_balance, "principalBalance", :default_value => nil
     numeric_node :escrow_balance, "escrowBalance", :default_value => nil
     numeric_node :interest_rate, "interestRate", :default_value => nil
-    text_node :interest_period, "interestPeriod", :default_value => nil      
+    text_node :interest_period, "interestPeriod", :default_value => nil
     numeric_node :initial_amount, "initialAmount", :default_value => nil
     date_time_node :initial_date, "initialDate", :default_value => nil
-    numeric_node :next_payment_principal_amount, "nextPaymentPrincipalAmount", :default_value => nil    
-    numeric_node :next_payment_interest_amount, "nextPaymentInterestAmount", :default_value => nil        
-    numeric_node :next_payment, "nextPayment", :default_value => nil        
-    date_time_node :next_payment_date, "nextPaymentDate", :default_value => nil  
-    date_time_node :next_payment_due_date, "nextPaymentDueDate", :default_value => nil    
-    date_time_node :next_payment_receive_date, "nextPaymentReceiveDate", :default_value => nil      
-    numeric_node :last_payment_amount, "lastPaymentAmount", :default_value => nil      
-    numeric_node :last_payment_principal_amount, "lastPaymentPrincipalAmount", :default_value => nil      
-    numeric_node :last_payment_interest_amount, "lastPaymentInterestAmount", :default_value => nil      
-    numeric_node :last_payment_escrow_amount, "lastPaymentEscrowAmount", :default_value => nil      
-    numeric_node :last_payment_last_fee_amount, "lastPaymentLastFeeAmount", :default_value => nil      
-    numeric_node :last_payment_late_charge, "lastPaymentLateCharge", :default_value => nil      
-    numeric_node :principal_paid_ytd, "principalPaidYTD", :default_value => nil      
-    numeric_node :interest_paid_ytd, "interestPaidYTD", :default_value => nil   
-    numeric_node :insurance_paid_ytd, "insurancePaidYTD", :default_value => nil   
-    numeric_node :tax_paid_ytd, "taxPaidYTD", :default_value => nil   
-    boolean_node :auto_pay_enrolled, "autoPayEnrolled", :default_value => nil   
-    text_node :collateral, "collateral", :default_value => nil  
-    text_node :current_school, "currentSchool", :default_value => nil  
-    date_time_node :first_payment_date, "firstPaymentDate", :default_value => nil  
-    text_node :guarantor, "guarantor", :default_value => nil  
-    boolean_node :first_mortgage, "firstMortgage", :default_value => nil       
-    text_node :loan_payment_freq, "loanPaymentFreq", :default_value => nil  
-    numeric_node :payment_min_amount, "paymentMinAmount", :default_value => nil           
-    text_node :original_school, "originalSchool", :default_value => nil   
-    numeric_node :recurring_payment_amount, "recurringPaymentAmount", :default_value => nil   
-    text_node :lender, "lender", :default_value => nil  
-    numeric_node :ending_balance_amount, "endingBalanceAmount", :default_value => nil   
-    numeric_node :available_balance_amount, "availableBalanceAmount", :default_value => nil   
-    text_node :loan_term_type, "loanTermType", :default_value => nil  
-    numeric_node :no_of_payments, "noOfPayments", :default_value => nil    
+    numeric_node :next_payment_principal_amount, "nextPaymentPrincipalAmount", :default_value => nil
+    numeric_node :next_payment_interest_amount, "nextPaymentInterestAmount", :default_value => nil
+    numeric_node :next_payment, "nextPayment", :default_value => nil
+    date_time_node :next_payment_date, "nextPaymentDate", :default_value => nil
+    date_time_node :next_payment_due_date, "nextPaymentDueDate", :default_value => nil
+    date_time_node :next_payment_receive_date, "nextPaymentReceiveDate", :default_value => nil
+    numeric_node :last_payment_amount, "lastPaymentAmount", :default_value => nil
+    numeric_node :last_payment_principal_amount, "lastPaymentPrincipalAmount", :default_value => nil
+    numeric_node :last_payment_interest_amount, "lastPaymentInterestAmount", :default_value => nil
+    numeric_node :last_payment_escrow_amount, "lastPaymentEscrowAmount", :default_value => nil
+    numeric_node :last_payment_last_fee_amount, "lastPaymentLastFeeAmount", :default_value => nil
+    numeric_node :last_payment_late_charge, "lastPaymentLateCharge", :default_value => nil
+    numeric_node :principal_paid_ytd, "principalPaidYTD", :default_value => nil
+    numeric_node :interest_paid_ytd, "interestPaidYTD", :default_value => nil
+    numeric_node :insurance_paid_ytd, "insurancePaidYTD", :default_value => nil
+    numeric_node :tax_paid_ytd, "taxPaidYTD", :default_value => nil
+    boolean_node :auto_pay_enrolled, "autoPayEnrolled", :default_value => nil
+    text_node :collateral, "collateral", :default_value => nil
+    text_node :current_school, "currentSchool", :default_value => nil
+    date_time_node :first_payment_date, "firstPaymentDate", :default_value => nil
+    text_node :guarantor, "guarantor", :default_value => nil
+    boolean_node :first_mortgage, "firstMortgage", :default_value => nil
+    text_node :loan_payment_freq, "loanPaymentFreq", :default_value => nil
+    numeric_node :payment_min_amount, "paymentMinAmount", :default_value => nil
+    text_node :original_school, "originalSchool", :default_value => nil
+    numeric_node :recurring_payment_amount, "recurringPaymentAmount", :default_value => nil
+    text_node :lender, "lender", :default_value => nil
+    numeric_node :ending_balance_amount, "endingBalanceAmount", :default_value => nil
+    numeric_node :available_balance_amount, "availableBalanceAmount", :default_value => nil
+    text_node :loan_term_type, "loanTermType", :default_value => nil
+    numeric_node :no_of_payments, "noOfPayments", :default_value => nil
     numeric_node :balloon_amount, "balloonAmount", :default_value => nil
-    numeric_node :projected_interest, "projectedInterest", :default_value => nil    
-    numeric_node :interest_paid_ltd, "interestPaidLtd", :default_value => nil    
-    text_node :interest_rate_type, "interestRateType", :default_value => nil      
-    text_node :loan_payment_type, "loanPaymentType", :default_value => nil  
-    numeric_node :remainingPayments, "remainingPayments", :default_value => nil    
-    
+    numeric_node :projected_interest, "projectedInterest", :default_value => nil
+    numeric_node :interest_paid_ltd, "interestPaidLtd", :default_value => nil
+    text_node :interest_rate_type, "interestRateType", :default_value => nil
+    text_node :loan_payment_type, "loanPaymentType", :default_value => nil
+    numeric_node :remainingPayments, "remainingPayments", :default_value => nil
+
   end
-  
+
 
   class CreditAccount < Account
     include XML::Mapping
@@ -533,5 +555,8 @@ module IntuitIdsAggcat
     array_node :loan_transactions, "LoanTransaction", :class => LoanTransaction, :default_value => nil
     array_node :investment_transactions, "InvestmentTransaction", :class => InvestmentTransaction, :default_value => nil
     array_node :rewards_transactions, "RewardsTransaction", :class => RewardsTransaction, :default_value => nil
-  end 
+    def error?
+      false
+    end
+  end
 end

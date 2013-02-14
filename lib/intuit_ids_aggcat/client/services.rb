@@ -2,6 +2,7 @@ require 'oauth'
 require 'rexml/document'
 require 'xml/mapping'
 require 'intuit_ids_aggcat/client/intuit_xml_mappings'
+require_relative 'service_error'
 
 module IntuitIdsAggcat
 
@@ -19,12 +20,15 @@ module IntuitIdsAggcat
         # Gets all institutions supported by Intuit. If oauth_token_info isn't provided, new tokens are provisioned using "default" user
         # consumer_key and consumer_secret will be retrieved from the Configuration class if not provided
         def get_institutions oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens("default"), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
+          puts "================================================="
+          puts __method__
+          puts "================================================="
           response = oauth_get_request "https://financialdatafeed.platform.intuit.com/rest-war/v1/institutions", oauth_token_info, consumer_key, consumer_secret
           if response[:response_code] == "200"
             institutions = Institutions.load_from_xml(response[:response_xml].root)
             institutions.institutions
           else
-            return nil
+            IntuitIdsAggcat::Client::ServiceError.new(response)
           end
         end
 
@@ -32,12 +36,15 @@ module IntuitIdsAggcat
         # Gets the institution details for id. If oauth_token_info isn't provided, new tokens are provisioned using "default" user
         # consumer_key and consumer_secret will be retrieved from the Configuration class if not provided
         def get_institution_detail id, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens("default"), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
+          puts "================================================="
+          puts __method__
+          puts "================================================="
           response = oauth_get_request "https://financialdatafeed.platform.intuit.com/rest-war/v1/institutions/#{id}", oauth_token_info, consumer_key, consumer_secret
           if response[:response_code] == "200"
             institutions = InstitutionDetail.load_from_xml(response[:response_xml].root)
             institutions
           else
-            response
+            IntuitIdsAggcat::Client::ServiceError.new(response)
           end
         end
 
@@ -45,8 +52,16 @@ module IntuitIdsAggcat
         # Get a specific account for a customer from aggregation at Intuit.
         # username and account ID must be provided, if no oauth_token_info is provided, new tokens will be provisioned using username
         def get_account username, account_id, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
+          puts "================================================="
+          puts __method__
+          puts "================================================="
           url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/accounts/#{account_id}"
-          oauth_get_request url, oauth_token_info
+          response = oauth_get_request url, oauth_token_info
+          if response[:response_code] == "200"
+            account = AccountList.load_from_xml(response[:response_xml].root)
+          else
+            IntuitIdsAggcat::Client::ServiceError.new(response)
+          end
         end
 
 
@@ -54,6 +69,9 @@ module IntuitIdsAggcat
         # Deletes the customer's accounts from aggregation at Intuit.
         # username must be provided, if no oauth_token_info is provided, new tokens will be provisioned using username
         def delete_customer username, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
+          puts "================================================="
+          puts __method__
+          puts "================================================="
           url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/customers/"
           oauth_delete_request url, oauth_token_info
         end
@@ -62,6 +80,9 @@ module IntuitIdsAggcat
         # Deletes the a specific account for a customer from aggregation at Intuit.
         # username and account ID must be provided, if no oauth_token_info is provided, new tokens will be provisioned using username
         def delete_account username, account_id, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
+          puts "================================================="
+          puts __method__
+          puts "================================================="
           puts "in gem, username = #{username}, account = #{account_id}."
           url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/accounts/#{account_id}"
           oauth_delete_request url, oauth_token_info
@@ -72,7 +93,7 @@ module IntuitIdsAggcat
         # institution_id is the ID of the institution, username is the ID for this customer's accounts at Intuit and must be used for future requests,
         # creds_hash is a hash object of key value pairs used for authentication
         # If oauth_token is not provided, new tokens will be provisioned using the username provided
-        # Returns a hash produced by discover_account_data_to_hash with the following keys:
+        # Returns a hash produced by parse_account_data with the following keys:
         #    discover_response   : hash including the following keys:
         #                              response_code:        HTTP response code from Intuit
         #                              response_xml :        XML returned by Intuit
@@ -85,7 +106,9 @@ module IntuitIdsAggcat
         #    description         : text description of the result of the discover request
 
         def discover_and_add_accounts_with_credentials institution_id, username, creds_hash, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 30
-
+          puts "================================================="
+          puts __method__
+          puts "================================================="
           url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/institutions/#{institution_id}/logins"
           credentials_array = []
           creds_hash.each do |k, v|
@@ -99,12 +122,15 @@ module IntuitIdsAggcat
           il = InstitutionLogin.new
           il.credentials = creds
           daa = oauth_post_request url, il.save_to_xml.to_s, oauth_token_info
-          discover_account_data_to_hash daa
+          parse_account_data daa
         end
 
         ##
         # Given a username, response text, challenge session ID and challenge node ID, passes the credentials to Intuit to begin aggregation
         def challenge_response institution_id, username, response, challenge_session_id, challenge_node_id, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
+          puts "================================================="
+          puts __method__
+          puts "================================================="
           url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/institutions/#{institution_id}/logins"
           if !(response.kind_of?(Array) || response.respond_to?('each'))
             response = [response]
@@ -115,20 +141,30 @@ module IntuitIdsAggcat
           il = IntuitIdsAggcat::InstitutionLogin.new
           il.challenge_responses = cr
           daa = oauth_post_request url, il.save_to_xml.to_s, oauth_token_info, {"challengeSessionId" => challenge_session_id, "challengeNodeId" => challenge_node_id}
-          discover_account_data_to_hash daa
+          parse_account_data daa
         end
 
         ##
         # Gets all accounts for a customer
         def get_customer_accounts username, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
+          puts "================================================="
+          puts __method__
+          puts "================================================="
           url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/accounts/"
           response = oauth_get_request url, oauth_token_info
-          accounts = AccountList.load_from_xml(response[:response_xml].root)
+          if response[:response_code] == "200"
+            accounts = AccountList.load_from_xml(response[:response_xml].root)
+          else
+            IntuitIdsAggcat::Client::ServiceError.new(response)
+          end
         end
 
         ##
         # Get transactions for a specific account and timeframe
         def get_account_transactions username, account_id, start_date, end_date = nil, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
+          puts "================================================="
+          puts __method__
+          puts "================================================="
           txn_start = start_date.strftime("%Y-%m-%d")
           url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/accounts/#{account_id}/transactions?txnStartDate=#{txn_start}"
           if !end_date.nil?
@@ -137,43 +173,39 @@ module IntuitIdsAggcat
           end
           response = oauth_get_request url, oauth_token_info
           xml = REXML::Document.new response[:response_xml].to_s
-          if response[:response_code] == "200"
+          if response[:response_xml].to_s.include?("CHALLENGE_RESPONSE_REQUIRED")
+            "CHALLENGE_RESPONSE_REQUIRED"
+          elsif response[:response_code] == "200"
             tl = IntuitIdsAggcat::TransactionList.load_from_xml xml.root
           else
-            response
+            IntuitIdsAggcat::Client::ServiceError.new(response)
           end
         end
 
         ## 
         # Helper method for parsing discover account response data
-        def discover_account_data_to_hash daa
+        def parse_account_data response
           challenge_type = "none"
-          if daa[:response_code] == "201"
-            # return account list
-            accounts = AccountList.load_from_xml(daa[:response_xml].root)
-            {discover_response: daa, accounts: accounts, challenge_type: challenge_type, challenge: nil, description: "Account information retrieved."}
-          elsif daa[:response_code] == "401" && daa[:challenge_session_id]
+          if ["200","201"].include?(response[:response_code])
+            accounts = AccountList.load_from_xml(response[:response_xml].root)
+          elsif response[:response_code] == "401" && response[:challenge_session_id]
             # return challenge
-            challenge = Challenges.load_from_xml(daa[:response_xml].root)
-            challenge_type = "unknown"
-            if challenge.save_to_xml.to_s.include?("<choice>")
-              challenge_type = "choice"
-            elsif challenge.save_to_xml.to_s.include?("image")
-              challenge_type ="image"
-            else
-              challenge_type = "text"
-            end
-            {discover_response: daa, accounts: nil, challenge_type: challenge_type, challenge: challenge, challenge_session_id: daa[:challenge_session_id], challenge_node_id: daa[:challenge_node_id], description: "Multi-factor authentication required to retrieve accounts."}
-          elsif daa[:response_code] == "404"
-            {discover_response: daa, accounts: nil, challenge_type: challenge_type, challenge: nil, description: "Institution not found."}
-          elsif daa[:response_code] == "408"
-            {discover_response: daa, accounts: nil, challenge_type: challenge_type, challenge: nil, description: "Multi-factor authentication session expired."}
-          elsif daa[:response_code] == "500"
-            {discover_response: daa, accounts: nil, challenge_type: challenge_type, challenge: nil, description: "Internal server error."}
-          elsif daa[:response_code] == "503"
-            {discover_response: daa, accounts: nil, challenge_type: challenge_type, challenge: nil, description: "Problem at the finanical institution."}
+            challenge = Challenges.load_from_xml(response[:response_xml].root)
+            challenge.challenge_type = if challenge.save_to_xml.to_s.include?("<choice>")
+                                         "choice"
+                                       elsif challenge.save_to_xml.to_s.include?("image")
+                                         "image"
+                                       else
+                                         "text"
+                                       end
+            challenge.challenge_session_id = response[:challenge_session_id]
+            challenge.challenge_node_id = response[:challenge_node_id]
+            challenge.error_code = response[:error_code]
+            challenge.error_type = response[:error_type]
+            challenge.error_message = response[:error_message]
+            challenge
           else
-            {discover_response: daa, accounts: nil, challenge_type: challenge_type, challenge: nil, description: "Unknown error."}
+            IntuitIdsAggcat::Client::ServiceError.new(response)
           end
         end
 
@@ -182,9 +214,12 @@ module IntuitIdsAggcat
         # Explicit Refresh: IntuitIdsAggcat::Client::Services.update_institution_login <username>, {}, <institution_login_id>, true
         # Reauthentication: IntuitIdsAggcat::Client::Services.update_institution_login <username>, {<username_label> => <username>, <password_label> => <password>}, <institution_login_id>
         def update_institution_login username, creds_hash, institution_login_id, refresh = false, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
+          puts "================================================="
+          puts __method__
+          puts "================================================="
           url = "https://financialdatafeed.platform.intuit.com/v1/logins/#{institution_login_id}"
           url = "#{url}?refresh=true" if refresh == true
-          if creds_hash.present?
+          if !creds_hash.nil? && !creds_hash.empty?
             credentials_array = []
             creds_hash.each do |k, v|
               c = Credential.new
@@ -201,43 +236,15 @@ module IntuitIdsAggcat
             data = ""
           end
           daa = oauth_put_request url, data, oauth_token_info
-          update_institution_login_data_to_hash daa
-        end
-
-        ##
-        # Helper method for parsing discover account response data
-        def update_institution_login_data_to_hash daa
-          challenge_type = "none"
-          if daa[:response_code] == "200"
-            {update_institution_login_response: daa, challenge_type: challenge_type, challenge: nil, description: "Account successfully reauthenticated or refreshed."}
-          elsif daa[:response_code] == "401"
-            # return challenge
-            challenge = Challenges.load_from_xml(daa[:response_xml].root)
-            challenge_type = "unknown"
-            if challenge.save_to_xml.to_s.include?("<choice>")
-              challenge_type = "choice"
-            elsif challenge.save_to_xml.to_s.include?("image")
-              challenge_type ="image"
-            else
-              challenge_type = "text"
-            end
-            {update_institution_login_response: daa, accounts: nil, challenge_type: challenge_type, challenge: challenge, challenge_session_id: daa[:challenge_session_id], challenge_node_id: daa[:challenge_node_id], description: "Multi-factor authentication required to retrieve accounts."}
-          elsif daa[:response_code] == "404"
-            {update_institution_login_response: daa, accounts: nil, challenge_type: challenge_type, challenge: nil, description: "Institution not found."}
-          elsif daa[:response_code] == "408"
-            {update_institution_login_response: daa, accounts: nil, challenge_type: challenge_type, challenge: nil, description: "Multi-factor authentication session expired."}
-          elsif daa[:response_code] == "500"
-            {update_institution_login_response: daa, accounts: nil, challenge_type: challenge_type, challenge: nil, description: "Internal server error."}
-          elsif daa[:response_code] == "503"
-            {update_institution_login_response: daa, accounts: nil, challenge_type: challenge_type, challenge: nil, description: "Problem at the finanical institution."}
-          else
-            {update_institution_login_response: daa, accounts: nil, challenge_type: challenge_type, challenge: nil, description: "Unknown error."}
-          end
+          parse_account_data daa
         end
 
         ##
         # Given a username, response text, challenge session ID and challenge node ID, passes the credentials to Intuit to begin aggregation
         def update_institution_login_challenge_response institution_login_id, username, response, challenge_session_id, challenge_node_id, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
+          puts "================================================="
+          puts __method__
+          puts "================================================="
           url = "https://financialdatafeed.platform.intuit.com/v1/logins/#{institution_login_id}"
           if !(response.kind_of?(Array) || response.respond_to?('each'))
             response = [response]
@@ -248,12 +255,15 @@ module IntuitIdsAggcat
           il = IntuitIdsAggcat::InstitutionLogin.new
           il.challenge_responses = cr
           daa = oauth_put_request url, il.save_to_xml.to_s, oauth_token_info, {"challengeSessionId" => challenge_session_id, "challengeNodeId" => challenge_node_id}
-          update_institution_login_data_to_hash daa
+          parse_account_data daa
         end
 
         ##
         # This call updates the type of an account from "Other" to some concrete account type.
         def update_account_type username, account_id, account_type, account_sub_type, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
+          puts "================================================="
+          puts __method__
+          puts "================================================="
           url = "https://financialdatafeed.platform.intuit.com/v1/accounts/#{account_id}"
           puts url
           if account_type == "Banking"
@@ -269,6 +279,11 @@ module IntuitIdsAggcat
           end
           acct_type.account_type = account_sub_type
           response = oauth_put_request url, acct_type.save_to_xml.to_s, oauth_token_info
+          if response[:response_code] == "200"
+            200
+          else
+            IntuitIdsAggcat::Client::ServiceError.new(response)
+          end
         end
 
         ##
@@ -308,12 +323,7 @@ module IntuitIdsAggcat
             challenge_session_id = response["challengeSessionId"]
             challenge_node_id = response["challengeNodeId"]
           end
-          if !response_xml.elements["Status/errorInfo"].nil?
-            error_code = response_xml.elements["Status/errorInfo/errorCode"].text
-            error_type = response_xml.elements["Status/errorInfo/errorType"].text
-            error_message = response_xml.elements["Status/errorInfo/errorMessage"].text
-          end
-          {:challenge_session_id => challenge_session_id, :challenge_node_id => challenge_node_id, :response_code => response.code, :response_xml => response_xml, :error_code => error_code, :error_type => error_type, :error_message => error_message}
+          {:challenge_session_id => challenge_session_id, :challenge_node_id => challenge_node_id, :response_code => response.code, :response_xml => response_xml}.merge(with_errors(response_xml))
         end
 
         ##
@@ -350,12 +360,7 @@ module IntuitIdsAggcat
             #Rails.logger.error "REXML Parse Exception"
             return nil
           end
-          if !response_xml.elements["Status/errorInfo"].nil?
-            error_code = response_xml.elements["Status/errorInfo/errorCode"].text
-            error_type = response_xml.elements["Status/errorInfo/errorType"].text
-            error_message = response_xml.elements["Status/errorInfo/errorMessage"].text
-          end
-          {:response_code => response.code, :response_xml => response_xml, :error_code => error_code, :error_type => error_type, :error_message => error_message}
+          {:response_code => response.code, :response_xml => response_xml}.merge(with_errors(response_xml))
         end
 
         ##
@@ -390,17 +395,12 @@ module IntuitIdsAggcat
             return nil
           end
           # handle challenge responses from discoverAndAcccounts flow
-          if !response_xml.elements["Status/errorInfo"].nil?
-            error_code = response_xml.elements["Status/errorInfo/errorCode"].text
-            error_type = response_xml.elements["Status/errorInfo/errorType"].text
-            error_message = response_xml.elements["Status/errorInfo/errorMessage"].text
-          end
           challenge_session_id = challenge_node_id = nil
           if !response["challengeSessionId"].nil?
             challenge_session_id = response["challengeSessionId"]
             challenge_node_id = response["challengeNodeId"]
           end
-          {:challenge_session_id => challenge_session_id, :challenge_node_id => challenge_node_id, :response_code => response.code, :response_xml => response_xml, :error_code => error_code, :error_type => error_type, :error_message => error_message}
+          {:challenge_session_id => challenge_session_id, :challenge_node_id => challenge_node_id, :response_code => response.code, :response_xml => response_xml}.merge(with_errors(response_xml))
         end
 
 
@@ -416,14 +416,20 @@ module IntuitIdsAggcat
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
           response = access_token.delete(url, {"Content-Type" => 'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com'})
           response_xml = REXML::Document.new response.body
-          if !response_xml.elements["Status/errorInfo"].nil?
-            error_code = response_xml.elements["Status/errorInfo/errorCode"].text
-            error_type = response_xml.elements["Status/errorInfo/errorType"].text
-            error_message = response_xml.elements["Status/errorInfo/errorMessage"].text
-          end
-          {:response_code => response.code, :response_xml => response_xml, :error_code => error_code, :error_type => error_type, :error_message => error_message}
+          {:response_code => response.code, :response_xml => response_xml}.merge(with_errors(response_xml))
         end
 
+        private
+
+        def with_errors response_xml
+          error_hash = {:error_code => nil, :error_type => nil, :error_message => nil}
+          if !response_xml.elements["Status/errorInfo"].nil?
+            error_hash[:error_code] = response_xml.elements["Status/errorInfo/errorCode"].text
+            error_hash[:error_type] = response_xml.elements["Status/errorInfo/errorType"].text
+            error_hash[:error_message] = response_xml.elements["Status/errorInfo/errorMessage"].text
+          end
+          error_hash
+        end
       end
     end
   end
