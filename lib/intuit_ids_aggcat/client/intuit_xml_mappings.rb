@@ -558,5 +558,8 @@ module IntuitIdsAggcat
     def error?
       false
     end
+    def mfa?
+      true
+    end
   end
 end
