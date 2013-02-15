@@ -21,6 +21,9 @@ module IntuitIdsAggcat
         @error_type = options[:error_type]
         @error_message = options[:error_message]
       end
+      def password_reset?
+        error_code == "109"
+      end
       def mfa?
         false
       end
