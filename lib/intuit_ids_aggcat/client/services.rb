@@ -314,7 +314,9 @@ module IntuitIdsAggcat
           puts "body"
           puts body
           response = access_token.post(url, body, {"Content-Type" => 'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com'}.merge(headers))
+          puts "================================================="
           puts "response"
+          puts "================================================="
           puts response
           response_xml = REXML::Document.new response.body
           # handle challenge responses from discoverAndAcccounts flow
@@ -354,7 +356,9 @@ module IntuitIdsAggcat
           begin
             response = access_token.get(url, {"Content-Type" => 'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com'})
             response_xml = REXML::Document.new response.body
+            puts "================================================="
             puts "response"
+            puts "================================================="
             puts response
           rescue REXML::ParseException => msg
             #Rails.logger.error "REXML Parse Exception"
@@ -387,7 +391,9 @@ module IntuitIdsAggcat
           puts body
           begin
             response = access_token.put(url, body, {"Content-Type" => 'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com'}.merge(headers))
+            puts "================================================="
             puts "response"
+            puts "================================================="
             puts response
             response_xml = REXML::Document.new response.body
           rescue REXML::ParseException => msg
