@@ -173,8 +173,10 @@ module IntuitIdsAggcat
           end
           response = oauth_get_request url, oauth_token_info
           xml = REXML::Document.new response[:response_xml].to_s
-          if response[:response_xml].to_s.include?("CHALLENGE_RESPONSE_REQUIRED")
-            "CHALLENGE_RESPONSE_REQUIRED"
+          if response[:response_xml].to_s.include?('notRefreshedReason="UNAVAILABLE"')
+            "UNAVAILABLE"
+          elsif response[:response_xml].to_s.include?('notRefreshedReason="CHALLENGE_RESPONSE_REQUIRED"')
+              "CHALLENGE_RESPONSE_REQUIRED"
           elsif response[:response_code] == "200"
             tl = IntuitIdsAggcat::TransactionList.load_from_xml xml.root
           else
