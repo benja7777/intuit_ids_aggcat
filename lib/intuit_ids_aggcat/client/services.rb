@@ -24,7 +24,7 @@ module IntuitIdsAggcat
           puts __method__
           puts "================================================="
           response = oauth_get_request "https://financialdatafeed.platform.intuit.com/rest-war/v1/institutions", oauth_token_info, consumer_key, consumer_secret
-          if response[:response_code] == "200"
+          if response.present? && response[:response_code] == "200"
             institutions = Institutions.load_from_xml(response[:response_xml].root)
             institutions.institutions
           else
@@ -40,7 +40,7 @@ module IntuitIdsAggcat
           puts __method__
           puts "================================================="
           response = oauth_get_request "https://financialdatafeed.platform.intuit.com/rest-war/v1/institutions/#{id}", oauth_token_info, consumer_key, consumer_secret
-          if response[:response_code] == "200"
+          if response.present? && response[:response_code] == "200"
             institutions = InstitutionDetail.load_from_xml(response[:response_xml].root)
             institutions
           else
@@ -57,7 +57,7 @@ module IntuitIdsAggcat
           puts "================================================="
           url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/accounts/#{account_id}"
           response = oauth_get_request url, oauth_token_info
-          if response[:response_code] == "200"
+          if response.present? && response[:response_code] == "200"
             account = AccountList.load_from_xml(response[:response_xml].root)
           else
             IntuitIdsAggcat::Client::ServiceError.new(response)
@@ -105,7 +105,7 @@ module IntuitIdsAggcat
         #    challenge_node_id   : challenge node ID to pass to challenge_response if this is a challenge 
         #    description         : text description of the result of the discover request
 
-        def discover_and_add_accounts_with_credentials institution_id, username, creds_hash, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 30
+        def discover_and_add_accounts_with_credentials institution_id, username, creds_hash, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
           puts "================================================="
           puts __method__
           puts "================================================="
@@ -152,7 +152,7 @@ module IntuitIdsAggcat
           puts "================================================="
           url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/accounts/"
           response = oauth_get_request url, oauth_token_info
-          if response[:response_code] == "200"
+          if response.present? && response[:response_code] == "200"
             accounts = AccountList.load_from_xml(response[:response_xml].root)
           else
             IntuitIdsAggcat::Client::ServiceError.new(response)
@@ -172,13 +172,17 @@ module IntuitIdsAggcat
             url = "#{url}&txnEndDate=#{txn_end}"
           end
           response = oauth_get_request url, oauth_token_info
-          xml = REXML::Document.new response[:response_xml].to_s
-          if response[:response_xml].to_s.include?('notRefreshedReason="UNAVAILABLE"')
-            "UNAVAILABLE"
-          elsif response[:response_xml].to_s.include?('notRefreshedReason="CHALLENGE_RESPONSE_REQUIRED"')
+          if response.present?
+            xml = REXML::Document.new response[:response_xml].to_s
+            if response[:response_xml].to_s.include?("notRefreshedReason='UNAVAILABLE'")
+              "UNAVAILABLE"
+            elsif response[:response_xml].to_s.include?("notRefreshedReason='CHALLENGE_RESPONSE_REQUIRED'")
               "CHALLENGE_RESPONSE_REQUIRED"
-          elsif response[:response_code] == "200"
-            tl = IntuitIdsAggcat::TransactionList.load_from_xml xml.root
+            elsif response[:response_code] == "200"
+              tl = IntuitIdsAggcat::TransactionList.load_from_xml xml.root
+            else
+              IntuitIdsAggcat::Client::ServiceError.new(response)
+            end
           else
             IntuitIdsAggcat::Client::ServiceError.new(response)
           end
@@ -188,7 +192,7 @@ module IntuitIdsAggcat
         # Helper method for parsing discover account response data
         def parse_account_data response
           challenge_type = "none"
-          if ["200","201"].include?(response[:response_code])
+          if response.present? && ["200", "201"].include?(response[:response_code])
             accounts = AccountList.load_from_xml(response[:response_xml].root)
           elsif response[:response_code] == "401" && response[:challenge_session_id]
             # return challenge
@@ -281,7 +285,7 @@ module IntuitIdsAggcat
           end
           acct_type.account_type = account_sub_type
           response = oauth_put_request url, acct_type.save_to_xml.to_s, oauth_token_info
-          if response[:response_code] == "200"
+          if response.present? && response[:response_code] == "200"
             200
           else
             IntuitIdsAggcat::Client::ServiceError.new(response)
@@ -290,7 +294,7 @@ module IntuitIdsAggcat
 
         ##
         # Helper method to issue post requests
-        def oauth_post_request url, body, oauth_token_info, headers = {}, consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 120
+        def oauth_post_request url, body, oauth_token_info, headers = {}, consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 600
           oauth_token = oauth_token_info[:oauth_token]
           oauth_token_secret = oauth_token_info[:oauth_token_secret]
 
@@ -332,7 +336,7 @@ module IntuitIdsAggcat
 
         ##
         # Helper method to issue get requests
-        def oauth_get_request url, oauth_token_info, consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 120
+        def oauth_get_request url, oauth_token_info, consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 600
           oauth_token = oauth_token_info[:oauth_token]
           oauth_token_secret = oauth_token_info[:oauth_token_secret]
 
@@ -371,7 +375,7 @@ module IntuitIdsAggcat
 
         ##
         # Helper method to issue put requests
-        def oauth_put_request url, body, oauth_token_info, headers = {}, consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 120
+        def oauth_put_request url, body, oauth_token_info, headers = {}, consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 600
           oauth_token = oauth_token_info[:oauth_token]
           oauth_token_secret = oauth_token_info[:oauth_token_secret]
           options = {:request_token_path => 'https://financialdatafeed.platform.intuit.com', :timeout => timeout, :http_method => :put}
@@ -414,7 +418,7 @@ module IntuitIdsAggcat
 
         ##
         # Helper method to issue delete requests
-        def oauth_delete_request url, oauth_token_info, consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 120
+        def oauth_delete_request url, oauth_token_info, consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret, timeout = 600
           oauth_token = oauth_token_info[:oauth_token]
           oauth_token_secret = oauth_token_info[:oauth_token_secret]
 
@@ -422,7 +426,22 @@ module IntuitIdsAggcat
           options = options.merge({:proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil?
           consumer = OAuth::Consumer.new(consumer_key, consumer_secret, options)
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
+          puts "timestamp"
+          dateTime = Time.new
+          puts timestamp = dateTime.to_time.to_i
+          puts "url"
+          puts url
+          puts "oauth_token_info"
+          puts oauth_token_info
+          puts "consumer_key"
+          puts consumer_key
+          puts "consumer_secret"
+          puts consumer_secret
           response = access_token.delete(url, {"Content-Type" => 'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com'})
+          puts "================================================="
+          puts "response"
+          puts "================================================="
+          puts response
           response_xml = REXML::Document.new response.body
           {:response_code => response.code, :response_xml => response_xml}.merge(with_errors(response_xml))
         end
