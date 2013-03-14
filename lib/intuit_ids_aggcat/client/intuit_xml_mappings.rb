@@ -560,7 +560,7 @@ module IntuitIdsAggcat
       false
     end
     def mfa?
-      true
+      false
     end
   end
 end
