@@ -24,6 +24,9 @@ module IntuitIdsAggcat
       def password_reset?
         error_code == "109"
       end
+      def unavailable?
+        error_code == "105"
+      end
       def mfa?
         false
       end
