@@ -184,7 +184,7 @@ module IntuitIdsAggcat
               IntuitIdsAggcat::Client::ServiceError.new(response)
             end
           else
-            IntuitIdsAggcat::Client::ServiceError.new(response)
+            IntuitIdsAggcat::Client::ServiceError.new
           end
         end
 
