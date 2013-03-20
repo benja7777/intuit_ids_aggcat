@@ -23,7 +23,7 @@ module IntuitIdsAggcat
           puts "================================================="
           puts __method__
           puts "================================================="
-          response = oauth_get_request "https://financialdatafeed.platform.intuit.com/v1/institutions", oauth_token_info, consumer_key, consumer_secret
+          response = oauth_get_request "https://financialdatafeed.platform.intuit.com/rest-war/v1/institutions", oauth_token_info, consumer_key, consumer_secret
           if response.present? && response[:response_code] == "200"
             institutions = Institutions.load_from_xml(response[:response_xml].root)
             institutions.institutions
@@ -39,7 +39,7 @@ module IntuitIdsAggcat
           puts "================================================="
           puts __method__
           puts "================================================="
-          response = oauth_get_request "https://financialdatafeed.platform.intuit.com/v1/institutions/#{id}", oauth_token_info, consumer_key, consumer_secret
+          response = oauth_get_request "https://financialdatafeed.platform.intuit.com/rest-war/v1/institutions/#{id}", oauth_token_info, consumer_key, consumer_secret
           if response.present? && response[:response_code] == "200"
             institutions = InstitutionDetail.load_from_xml(response[:response_xml].root)
             institutions
@@ -55,7 +55,7 @@ module IntuitIdsAggcat
           puts "================================================="
           puts __method__
           puts "================================================="
-          url = "https://financialdatafeed.platform.intuit.com/v1/accounts/#{account_id}"
+          url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/accounts/#{account_id}"
           response = oauth_get_request url, oauth_token_info
           if response.present? && response[:response_code] == "200"
             account = AccountList.load_from_xml(response[:response_xml].root)
@@ -72,7 +72,7 @@ module IntuitIdsAggcat
           puts "================================================="
           puts __method__
           puts "================================================="
-          url = "https://financialdatafeed.platform.intuit.com/v1/customers/"
+          url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/customers/"
           oauth_delete_request url, oauth_token_info
         end
 
@@ -84,7 +84,7 @@ module IntuitIdsAggcat
           puts __method__
           puts "================================================="
           puts "in gem, username = #{username}, account = #{account_id}."
-          url = "https://financialdatafeed.platform.intuit.com/v1/accounts/#{account_id}"
+          url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/accounts/#{account_id}"
           oauth_delete_request url, oauth_token_info
         end
 
@@ -109,7 +109,7 @@ module IntuitIdsAggcat
           puts "================================================="
           puts __method__
           puts "================================================="
-          url = "https://financialdatafeed.platform.intuit.com/v1/institutions/#{institution_id}/logins"
+          url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/institutions/#{institution_id}/logins"
           credentials_array = []
           creds_hash.each do |k, v|
             c = Credential.new
@@ -131,7 +131,7 @@ module IntuitIdsAggcat
           puts "================================================="
           puts __method__
           puts "================================================="
-          url = "https://financialdatafeed.platform.intuit.com/v1/institutions/#{institution_id}/logins"
+          url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/institutions/#{institution_id}/logins"
           if !(response.kind_of?(Array) || response.respond_to?('each'))
             response = [response]
           end
@@ -150,7 +150,7 @@ module IntuitIdsAggcat
           puts "================================================="
           puts __method__
           puts "================================================="
-          url = "https://financialdatafeed.platform.intuit.com/v1/accounts/"
+          url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/accounts/"
           response = oauth_get_request url, oauth_token_info
           if response.present? && response[:response_code] == "200"
             accounts = AccountList.load_from_xml(response[:response_xml].root)
@@ -166,7 +166,7 @@ module IntuitIdsAggcat
           puts __method__
           puts "================================================="
           txn_start = start_date.strftime("%Y-%m-%d")
-          url = "https://financialdatafeed.platform.intuit.com/v1/accounts/#{account_id}/transactions?txnStartDate=#{txn_start}"
+          url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/accounts/#{account_id}/transactions?txnStartDate=#{txn_start}"
           if !end_date.nil?
             txn_end = end_date.strftime("%Y-%m-%d")
             url = "#{url}&txnEndDate=#{txn_end}"
@@ -225,7 +225,7 @@ module IntuitIdsAggcat
           puts "================================================="
           puts __method__
           puts "================================================="
-          url = "https://financialdatafeed.platform.intuit.com/v1/logins/#{institution_login_id}"
+          url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/logins/#{institution_login_id}"
           url = "#{url}?refresh=true" if refresh == true
           if !creds_hash.nil? && !creds_hash.empty?
             credentials_array = []
@@ -253,7 +253,7 @@ module IntuitIdsAggcat
           puts "================================================="
           puts __method__
           puts "================================================="
-          url = "https://financialdatafeed.platform.intuit.com/v1/logins/#{institution_login_id}"
+          url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/logins/#{institution_login_id}"
           if !(response.kind_of?(Array) || response.respond_to?('each'))
             response = [response]
           end
@@ -272,7 +272,7 @@ module IntuitIdsAggcat
           puts "================================================="
           puts __method__
           puts "================================================="
-          url = "https://financialdatafeed.platform.intuit.com/v1/accounts/#{account_id}"
+          url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/accounts/#{account_id}"
           puts url
           if account_type == "Banking"
             acct_type = IntuitIdsAggcat::BankingAccountType.new
