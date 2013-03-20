@@ -10,7 +10,8 @@ module IntuitIdsAggcat
                   :response_xml,
                   :error_code,
                   :error_type,
-                  :error_message
+                  :error_message,
+                  :not_refreshed_reason
 
       def initialize(options = {})
         @challenge_session_id = options[:challenge_session_id]
@@ -20,16 +21,21 @@ module IntuitIdsAggcat
         @error_code = options[:error_code]
         @error_type = options[:error_type]
         @error_message = options[:error_message]
+        @not_refreshed_reason = NotRefreshedReason.new(options[:not_refreshed_reason]) unless options[:not_refreshed_reason].nil?
       end
+
       def password_reset?
         error_code == "109"
       end
+
       def unavailable?
         error_code == "105"
       end
+
       def mfa?
         false
       end
+
       def error?
         true
       end
@@ -37,4 +43,15 @@ module IntuitIdsAggcat
 
   end
 
+  class NotRefreshedReason < Struct.new(:reason)
+    def unavailable?
+      reason === 'UNAVAILABLE'
+    end
+    def credentials_required?
+      reason === 'CREDENTIALS_REQUIRED'
+    end
+    def mfa?
+      reason === 'CHALLENGE_RESPONSE_REQUIRED'
+    end
+  end
 end

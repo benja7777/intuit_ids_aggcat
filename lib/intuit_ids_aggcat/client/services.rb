@@ -175,11 +175,13 @@ module IntuitIdsAggcat
           if response.present?
             xml = REXML::Document.new response[:response_xml].to_s
             if response[:response_xml].to_s.include?("notRefreshedReason='UNAVAILABLE'")
-              "UNAVAILABLE"
+              IntuitIdsAggcat::Client::ServiceError.new(response.merge(:not_refreshed_reason => "UNAVAILABLE"))
+            elsif response[:response_xml].to_s.include?("notRefreshedReason='CREDENTIALS_REQUIRED'")
+              IntuitIdsAggcat::Client::ServiceError.new(response.merge(:not_refreshed_reason => "CREDENTIALS_REQUIRED"))
             elsif response[:response_xml].to_s.include?("notRefreshedReason='CHALLENGE_RESPONSE_REQUIRED'")
-              "CHALLENGE_RESPONSE_REQUIRED"
+              IntuitIdsAggcat::Client::ServiceError.new(response.merge(:not_refreshed_reason => "CHALLENGE_RESPONSE_REQUIRED"))
             elsif response[:response_code] == "200"
-              tl = IntuitIdsAggcat::TransactionList.load_from_xml xml.root
+              IntuitIdsAggcat::TransactionList.load_from_xml xml.root
             else
               IntuitIdsAggcat::Client::ServiceError.new(response)
             end
