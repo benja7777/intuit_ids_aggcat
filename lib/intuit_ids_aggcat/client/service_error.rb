@@ -14,6 +14,7 @@ module IntuitIdsAggcat
                   :not_refreshed_reason
 
       def initialize(options = {})
+        options = {} unless options
         @challenge_session_id = options[:challenge_session_id]
         @challenge_node_id = options[:challenge_node_id]
         @response_code = options[:response_code]

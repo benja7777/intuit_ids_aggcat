@@ -200,7 +200,7 @@ module IntuitIdsAggcat
           puts response
           if response.present? && ["200", "201"].include?(response[:response_code])
             accounts = AccountList.load_from_xml(response[:response_xml].root)
-          elsif response[:response_code] == "401" && response[:challenge_session_id]
+          elsif response.present? && response[:response_code] == "401" && response[:challenge_session_id]
             # return challenge
             challenge = Challenges.load_from_xml(response[:response_xml].root)
             challenge.challenge_type = if challenge.save_to_xml.to_s.include?("<choice>")
