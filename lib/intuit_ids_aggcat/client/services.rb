@@ -483,12 +483,7 @@ module IntuitIdsAggcat
 
         def write_to_log
           yield if block_given? && Socket.gethostname =~ /ryan|ben/i
-          puts ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          puts Socket.gethostname
-          puts RAILS_ENV
-          puts ENV['RAILS_ENV']
         end
-
       end
     end
   end
