@@ -481,7 +481,9 @@ module IntuitIdsAggcat
         end
 
         def write_to_log
-          yield if block_given? && Rails.env.development?
+          yield if block_given?
+          puts ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          puts request.to_yaml
         end
 
       end
