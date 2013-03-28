@@ -485,7 +485,7 @@ module IntuitIdsAggcat
           yield if block_given? && Socket.gethostname =~ /ryan|ben/i
           puts ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           puts Socket.gethostname
-          puts ENV.to_yaml
+          puts ENV['RAILS_ENV']
         end
 
       end
