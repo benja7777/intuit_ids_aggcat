@@ -483,7 +483,6 @@ module IntuitIdsAggcat
         def write_to_log
           yield if block_given?
           puts ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          puts request.to_yaml
           puts ENV.to_yaml
         end
 
