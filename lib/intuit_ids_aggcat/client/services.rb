@@ -484,6 +484,7 @@ module IntuitIdsAggcat
           yield if block_given?
           puts ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           puts request.to_yaml
+          puts ENV.to_yaml
         end
 
       end
