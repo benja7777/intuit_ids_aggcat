@@ -3,6 +3,7 @@ require 'rexml/document'
 require 'xml/mapping'
 require 'intuit_ids_aggcat/client/intuit_xml_mappings'
 require_relative 'service_error'
+require 'socket'
 
 module IntuitIdsAggcat
 
@@ -481,8 +482,9 @@ module IntuitIdsAggcat
         end
 
         def write_to_log
-          yield if block_given?
+          yield if block_given? && Socket.gethostname =~ /ryan|ben/i
           puts ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          puts Socket.gethostname
           puts ENV.to_yaml
         end
 
