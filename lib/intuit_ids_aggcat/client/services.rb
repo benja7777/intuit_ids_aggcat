@@ -482,7 +482,8 @@ module IntuitIdsAggcat
         end
 
         def write_to_log
-          yield if block_given? && Socket.gethostname =~ /ryan|ben/i
+          #yield if block_given? && Socket.gethostname =~ /ryan|ben/i
+          yield if block_given?
         end
       end
     end
