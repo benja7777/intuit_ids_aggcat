@@ -21,9 +21,11 @@ module IntuitIdsAggcat
         # Gets all institutions supported by Intuit. If oauth_token_info isn't provided, new tokens are provisioned using "default" user
         # consumer_key and consumer_secret will be retrieved from the Configuration class if not provided
         def get_institutions oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens("default"), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
-          puts "================================================="
-          puts __method__
-          puts "================================================="
+          write_to_log(
+            "=================================================",
+            __method__,
+            "================================================="
+          )
           response = oauth_get_request "https://financialdatafeed.platform.intuit.com/v1/institutions", oauth_token_info, consumer_key, consumer_secret
           if response.present? && response[:response_code] == "200"
             institutions = Institutions.load_from_xml(response[:response_xml].root)
@@ -37,9 +39,11 @@ module IntuitIdsAggcat
         # Gets the institution details for id. If oauth_token_info isn't provided, new tokens are provisioned using "default" user
         # consumer_key and consumer_secret will be retrieved from the Configuration class if not provided
         def get_institution_detail id, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens("default"), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
-          puts "================================================="
-          puts __method__
-          puts "================================================="
+          write_to_log(
+            "=================================================",
+            __method__,
+            "================================================="
+          )
           response = oauth_get_request "https://financialdatafeed.platform.intuit.com/v1/institutions/#{id}", oauth_token_info, consumer_key, consumer_secret
           if response.present? && response[:response_code] == "200"
             institutions = InstitutionDetail.load_from_xml(response[:response_xml].root)
@@ -53,9 +57,11 @@ module IntuitIdsAggcat
         # Get a specific account for a customer from aggregation at Intuit.
         # username and account ID must be provided, if no oauth_token_info is provided, new tokens will be provisioned using username
         def get_account username, account_id, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
-          puts "================================================="
-          puts __method__
-          puts "================================================="
+          write_to_log(
+            "=================================================",
+            __method__,
+            "================================================="
+          )
           url = "https://financialdatafeed.platform.intuit.com/v1/accounts/#{account_id}"
           response = oauth_get_request url, oauth_token_info
           if response.present? && response[:response_code] == "200"
@@ -70,9 +76,11 @@ module IntuitIdsAggcat
         # Deletes the customer's accounts from aggregation at Intuit.
         # username must be provided, if no oauth_token_info is provided, new tokens will be provisioned using username
         def delete_customer username, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
-          puts "================================================="
-          puts __method__
-          puts "================================================="
+          write_to_log(
+            "=================================================",
+            __method__,
+            "================================================="
+          )
           url = "https://financialdatafeed.platform.intuit.com/v1/customers/"
           oauth_delete_request url, oauth_token_info
         end
@@ -81,11 +89,13 @@ module IntuitIdsAggcat
         # Deletes the a specific account for a customer from aggregation at Intuit.
         # username and account ID must be provided, if no oauth_token_info is provided, new tokens will be provisioned using username
         def delete_account username, account_id, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
-          puts "================================================="
-          puts __method__
-          puts "================================================="
-          puts "in gem, username = #{username}, account = #{account_id}."
           url = "https://financialdatafeed.platform.intuit.com/v1/accounts/#{account_id}"
+          write_to_log(
+            "=================================================",
+            __method__,
+            "=================================================",
+            url
+          )
           oauth_delete_request url, oauth_token_info
         end
 
@@ -107,9 +117,11 @@ module IntuitIdsAggcat
         #    description         : text description of the result of the discover request
 
         def discover_and_add_accounts_with_credentials institution_id, username, creds_hash, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
-          puts "================================================="
-          puts __method__
-          puts "================================================="
+          write_to_log(
+            "=================================================",
+            __method__,
+            "================================================="
+          )
           url = "https://financialdatafeed.platform.intuit.com/v1/institutions/#{institution_id}/logins"
           credentials_array = []
           creds_hash.each do |k, v|
@@ -129,9 +141,11 @@ module IntuitIdsAggcat
         ##
         # Given a username, response text, challenge session ID and challenge node ID, passes the credentials to Intuit to begin aggregation
         def challenge_response institution_id, username, response, challenge_session_id, challenge_node_id, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
-          puts "================================================="
-          puts __method__
-          puts "================================================="
+          write_to_log(
+            "=================================================",
+            __method__,
+            "================================================="
+          )
           url = "https://financialdatafeed.platform.intuit.com/v1/institutions/#{institution_id}/logins"
           if !(response.kind_of?(Array) || response.respond_to?('each'))
             response = [response]
@@ -148,9 +162,11 @@ module IntuitIdsAggcat
         ##
         # Gets all accounts for a customer
         def get_customer_accounts username, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
-          puts "================================================="
-          puts __method__
-          puts "================================================="
+          write_to_log(
+            "=================================================",
+            __method__,
+            "================================================="
+          )
           url = "https://financialdatafeed.platform.intuit.com/v1/accounts/"
           response = oauth_get_request url, oauth_token_info
           if response.present? && response[:response_code] == "200"
@@ -163,9 +179,11 @@ module IntuitIdsAggcat
         ##
         # Get transactions for a specific account and timeframe
         def get_account_transactions username, account_id, start_date, end_date = nil, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
-          puts "================================================="
-          puts __method__
-          puts "================================================="
+          write_to_log(
+            "=================================================",
+            __method__,
+            "================================================="
+          )
           txn_start = start_date.strftime("%Y-%m-%d")
           url = "https://financialdatafeed.platform.intuit.com/v1/accounts/#{account_id}/transactions?txnStartDate=#{txn_start}"
           if !end_date.nil?
@@ -195,12 +213,12 @@ module IntuitIdsAggcat
         # Helper method for parsing discover account response data
         def parse_account_data response
           challenge_type = "none"
-          write_to_log do
-            puts "================================================="
-            puts __method__
-            puts "================================================="
-            puts response
-          end
+          write_to_log(
+            "=================================================",
+            __method__,
+            "=================================================",
+            response
+          )
           if response.present? && ["200", "201"].include?(response[:response_code])
             accounts = AccountList.load_from_xml(response[:response_xml].root)
           elsif response.present? && response[:response_code] == "401" && response[:challenge_session_id]
@@ -229,9 +247,11 @@ module IntuitIdsAggcat
         # Explicit Refresh: IntuitIdsAggcat::Client::Services.update_institution_login <username>, {}, <institution_login_id>, true
         # Reauthentication: IntuitIdsAggcat::Client::Services.update_institution_login <username>, {<username_label> => <username>, <password_label> => <password>}, <institution_login_id>
         def update_institution_login username, creds_hash, institution_login_id, refresh = false, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
-          puts "================================================="
-          puts __method__
-          puts "================================================="
+          write_to_log(
+            "=================================================",
+            __method__,
+            "================================================="
+          )
           url = "https://financialdatafeed.platform.intuit.com/rest-war/v1/logins/#{institution_login_id}"
           url = "#{url}?refresh=true" if refresh == true
           if !creds_hash.nil? && !creds_hash.empty?
@@ -257,9 +277,11 @@ module IntuitIdsAggcat
         ##
         # Given a username, response text, challenge session ID and challenge node ID, passes the credentials to Intuit to begin aggregation
         def update_institution_login_challenge_response institution_login_id, username, response, challenge_session_id, challenge_node_id, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
-          puts "================================================="
-          puts __method__
-          puts "================================================="
+          write_to_log(
+            "=================================================",
+            __method__,
+            "================================================="
+          )
           url = "https://financialdatafeed.platform.intuit.com/v1/logins/#{institution_login_id}"
           if !(response.kind_of?(Array) || response.respond_to?('each'))
             response = [response]
@@ -277,10 +299,12 @@ module IntuitIdsAggcat
         # This call updates the type of an account from "Other" to some concrete account type.
         def update_account_type username, account_id, account_type, account_sub_type, oauth_token_info = IntuitIdsAggcat::Client::Saml.get_tokens(username), consumer_key = IntuitIdsAggcat.config.oauth_consumer_key, consumer_secret = IntuitIdsAggcat.config.oauth_consumer_secret
           url = "https://financialdatafeed.platform.intuit.com/v1/accounts/#{account_id}"
-          puts "================================================="
-          puts __method__
-          puts "================================================="
-          puts url
+          write_to_log(
+            "=================================================",
+            __method__,
+            "=================================================",
+            url
+          )
           if account_type == "Banking"
             acct_type = IntuitIdsAggcat::BankingAccountType.new
           elsif account_type == "Credit"
@@ -311,31 +335,34 @@ module IntuitIdsAggcat
           options = options.merge({:proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil?
           consumer = OAuth::Consumer.new(consumer_key, consumer_secret, options)
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
+          dateTime = Time.new
+          timestamp = dateTime.to_time.to_i
+          write_to_log(
+            "timestamp",
+            timestamp,
+            "url",
+            url,
+            "oauth_token_info",
+            oauth_token_info,
+            "consumer_key",
+            consumer_key,
+            "consumer_secret",
+            consumer_secret,
+            "consumer",
+            consumer,
+            "access_token",
+            access_token,
+            "body",
+            body
+          )
           response = access_token.post(url, body, {"Content-Type" => 'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com'}.merge(headers))
-          write_to_log do
-            puts "timestamp"
-            dateTime = Time.new
-            puts timestamp = dateTime.to_time.to_i
-            puts "url"
-            puts url
-            puts "oauth_token_info"
-            puts oauth_token_info
-            puts "consumer_key"
-            puts consumer_key
-            puts "consumer_secret"
-            puts consumer_secret
-            puts "consumer"
-            puts consumer
-            puts "access_token"
-            puts access_token
-            puts "body"
-            puts body
-            puts "================================================="
-            puts "response"
-            puts "================================================="
-            puts response
-          end
           response_xml = REXML::Document.new response.body
+          write_to_log(
+            "=================================================",
+            "response",
+            "=================================================",
+            response
+          )
           # handle challenge responses from discoverAndAcccounts flow
           challenge_session_id = challenge_node_id = nil
           if !response["challengeSessionId"].nil?
@@ -355,32 +382,33 @@ module IntuitIdsAggcat
           options = options.merge({:proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil?
           consumer = OAuth::Consumer.new(consumer_key, consumer_secret, options)
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
-          write_to_log do
-            puts "timestamp"
-            dateTime = Time.new
-            puts timestamp = dateTime.to_time.to_i
-            puts "url"
-            puts url
-            puts "oauth_token_info"
-            puts oauth_token_info
-            puts "consumer_key"
-            puts consumer_key
-            puts "consumer_secret"
-            puts consumer_secret
-            puts "consumer"
-            puts consumer
-            puts "access_token"
-            puts access_token
-          end
+          dateTime = Time.new
+          timestamp = dateTime.to_time.to_i
+          write_to_log(
+            "timestamp",
+            timestamp,
+            "url",
+            url,
+            "oauth_token_info",
+            oauth_token_info,
+            "consumer_key",
+            consumer_key,
+            "consumer_secret",
+            consumer_secret,
+            "consumer",
+            consumer,
+            "access_token",
+            access_token
+          )
           begin
             response = access_token.get(url, {"Content-Type" => 'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com'})
             response_xml = REXML::Document.new response.body
-            write_to_log do
-              puts "================================================="
-              puts "response"
-              puts "================================================="
-              puts response
-            end
+            write_to_log(
+              "=================================================",
+              "response",
+              "=================================================",
+              response
+              )
           rescue REXML::ParseException => msg
             #Rails.logger.error "REXML Parse Exception"
             return nil
@@ -397,29 +425,30 @@ module IntuitIdsAggcat
           options = options.merge({:proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil?
           consumer = OAuth::Consumer.new(consumer_key, consumer_secret, options)
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
-          write_to_log do
-            puts "timestamp"
-            dateTime = Time.new
-            puts timestamp = dateTime.to_time.to_i
-            puts "url"
-            puts url
-            puts "oauth_token_info"
-            puts oauth_token_info
-            puts "consumer_key"
-            puts consumer_key
-            puts "consumer_secret"
-            puts consumer_secret
-            puts "body"
-            puts body
-          end
+          dateTime = Time.new
+          timestamp = dateTime.to_time.to_i
+          write_to_log(
+            "timestamp",
+            timestamp,
+            "url",
+            url,
+            "oauth_token_info",
+            oauth_token_info,
+            "consumer_key",
+            consumer_key,
+            "consumer_secret",
+            consumer_secret,
+            "body",
+            body
+          )
           begin
             response = access_token.put(url, body, {"Content-Type" => 'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com'}.merge(headers))
-            write_to_log do
-              puts "================================================="
-              puts "response"
-              puts "================================================="
-              puts response
-            end
+            write_to_log(
+              "=================================================",
+              "response",
+              "=================================================",
+              response
+            )
             response_xml = REXML::Document.new response.body
           rescue REXML::ParseException => msg
             #Rails.logger.error "REXML Parse Exception"
@@ -445,26 +474,27 @@ module IntuitIdsAggcat
           options = options.merge({:proxy => IntuitIdsAggcat.config.proxy}) if !IntuitIdsAggcat.config.proxy.nil?
           consumer = OAuth::Consumer.new(consumer_key, consumer_secret, options)
           access_token = OAuth::AccessToken.new(consumer, oauth_token, oauth_token_secret)
-          write_to_log do
-            puts "timestamp"
-            dateTime = Time.new
-            puts timestamp = dateTime.to_time.to_i
-            puts "url"
-            puts url
-            puts "oauth_token_info"
-            puts oauth_token_info
-            puts "consumer_key"
-            puts consumer_key
-            puts "consumer_secret"
-            puts consumer_secret
-          end
+          dateTime = Time.new
+          timestamp = dateTime.to_time.to_i
+          write_to_log(
+            "timestamp",
+            timestamp,
+            "url",
+            url,
+            "oauth_token_info",
+            oauth_token_info,
+            "consumer_key",
+            consumer_key,
+            "consumer_secret",
+            consumer_secret 
+          )
           response = access_token.delete(url, {"Content-Type" => 'application/xml', 'Host' => 'financialdatafeed.platform.intuit.com'})
-          write_to_log do
-            puts "================================================="
-            puts "response"
-            puts "================================================="
-            puts response
-          end
+          write_to_log(
+            "=================================================",
+            "response",
+            "=================================================",
+            response
+          )
           response_xml = REXML::Document.new response.body
           {:response_code => response.code, :response_xml => response_xml}.merge(with_errors(response_xml))
         end
@@ -481,9 +511,14 @@ module IntuitIdsAggcat
           error_hash
         end
 
-        def write_to_log
+        def write_to_log *args
           #yield if block_given? && Socket.gethostname =~ /ryan|ben/i
-          yield if block_given?
+          data_string = args.join("\n")
+          data_string = data_string.gsub(/<v11[^>]*>.+<\/v11[^>]*>/,'HIDDEN_CHALLENGE_RESPONSES ')
+          data_string = data_string.gsub(/<challenge>.+<\/challenge>/,'HIDDEN_CHALLENGES ')
+          data_string = data_string.gsub(/<credential>.+<\/credential>/,'HIDDEN_CREDENTIALS ')
+
+          data_string if !data_string.blank?
         end
       end
     end
