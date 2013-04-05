@@ -518,7 +518,7 @@ module IntuitIdsAggcat
           data_string = data_string.gsub(/<challenge>.+<\/challenge>/,'HIDDEN_CHALLENGES ')
           data_string = data_string.gsub(/<credential>.+<\/credential>/,'HIDDEN_CREDENTIALS ')
 
-          data_string if !data_string.blank?
+          puts data_string if !data_string.blank?
         end
       end
     end
